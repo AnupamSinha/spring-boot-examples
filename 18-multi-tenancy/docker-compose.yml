@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: multitenant-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: multitenant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql
+
+volumes:
+  postgres_data:

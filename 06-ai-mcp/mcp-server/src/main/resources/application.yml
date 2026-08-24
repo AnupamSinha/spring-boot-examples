@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: mcp-server
+
+  ai:
+    mcp:
+      server:
+        name: payment-tools-server
+        version: 1.0.0
+        description: "MCP server exposing payment lookup and exchange rate tools"
+
+server:
+  port: 8081

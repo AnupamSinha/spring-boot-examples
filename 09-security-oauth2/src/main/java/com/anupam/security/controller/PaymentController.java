@@ -1,0 +1,55 @@
+package com.anupam.security.controller;
+
+import com.anupam.security.model.PaymentInfo;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api")
+public class PaymentController {
+
+    @GetMapping("/public/health")
+    public Map<String, String> health() {
+        return Map.of("status", "UP", "service", "spring-security-oauth2-demo");
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<List<PaymentInfo>> getPayments(@AuthenticationPrincipal Jwt jwt) {
+        String username = jwt.getClaimAsString("preferred_username");
+        // In production, filter by user. Here return sample data.
+        List<PaymentInfo> payments = List.of(
+                new PaymentInfo("TXN-001", new BigDecimal("250.00"), "COMPLETED", username, LocalDateTime.now()),
+                new PaymentInfo("TXN-002", new BigDecimal("89.99"), "PENDING", username, LocalDateTime.now())
+        );
+        return ResponseEntity.ok(payments);
+    }
+
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Map<String, String>>> getAllUsers() {
+        return ResponseEntity.ok(List.of(
+                Map.of("username", "alice", "role", "ADMIN"),
+                Map.of("username", "bob", "role", "USER")
+        ));
+    }
+
+    @GetMapping("/me")
+    public Map<String, Object> currentUser(@AuthenticationPrincipal Jwt jwt) {
+        return Map.of(
+                "username", jwt.getClaimAsString("preferred_username"),
+                "email", jwt.getClaimAsString("email") != null ? jwt.getClaimAsString("email") : "N/A",
+                "roles", jwt.getClaimAsMap("realm_access"),
+                "tokenExpiry", jwt.getExpiresAt()
+        );
+    }
+}

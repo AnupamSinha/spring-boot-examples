@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: spring-boot-performance-tuning
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/performance_db
+    username: appuser
+    password: apppassword
+    driver-class-name: org.postgresql.Driver
+
+    # HikariCP Connection Pool Configuration
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      leak-detection-threshold: 30000
+      pool-name: HikariPool-Perf
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        # Batch size for bulk operations
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+        # Second-level cache (disabled by default, enable in prod with EhCache/Redis)
+        cache:
+          use_second_level_cache: false
+        # Statistics for debugging (disable in production)
+        generate_statistics: false
+        # Fetch optimization
+        default_batch_fetch_size: 16
+    open-in-view: false
+
+  # Caffeine Cache Spec
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m,expireAfterAccess=5m,recordStats
+
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    max-connections: 10000
+    accept-count: 100
+
+# Actuator & Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,caches
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# JVM Tuning Notes (apply via JAVA_OPTS or command line):
+# -XX:+UseZGC -XX:+ZGenerational          → Low-latency GC for Java 21+
+# -Xms512m -Xmx1024m                      → Fixed heap to avoid resize pauses
+# -XX:+UseStringDeduplication              → Reduce memory for duplicate strings
+# -XX:+OptimizeStringConcat                → Faster string concatenation
+# -XX:MaxGCPauseMillis=50                  → Target max GC pause
+# -XX:+UseCompressedOops                   → Reduce pointer size (default for <32GB heap)
+# -XX:+AlwaysPreTouch                      → Pre-touch memory pages at startup

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: spring-boot-cqrs-eventsourcing
+
+  # PostgreSQL — Read Model
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orders_read
+    username: cqrs_user
+    password: cqrs_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # MongoDB — Event Store
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/event_store
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.anupam.cqrs: DEBUG
+    org.springframework.data.mongodb: INFO

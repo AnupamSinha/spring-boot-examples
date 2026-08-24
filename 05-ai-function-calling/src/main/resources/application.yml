@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: spring-ai-function
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+
+    # Tool call safety limits
+    tools:
+      limits:
+        max-calls-per-tool-default: 10
+        max-total-tool-calls: 25
+        on-limit-exceeded: RETURN_ERROR_RESPONSE
+
+server:
+  port: 8080

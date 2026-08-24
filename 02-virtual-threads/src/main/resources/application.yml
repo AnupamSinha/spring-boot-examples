@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,threaddump
+  endpoint:
+    health:
+      show-details: always

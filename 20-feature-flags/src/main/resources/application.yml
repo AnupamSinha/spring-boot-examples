@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: spring-boot-feature-flags
+
+server:
+  port: 8080
+
+# Togglz Configuration
+togglz:
+  enabled: true
+  feature-enums: com.anupam.flags.feature.AppFeatures
+  console:
+    enabled: true
+    path: /togglz-console
+    secured: false  # In production, set to true and configure authentication
+  # In-memory state repository (use JDBC or Redis in production)
+  state-repository:
+    type: IN_MEMORY
+
+logging:
+  level:
+    com.anupam.flags: DEBUG
+    org.togglz: INFO

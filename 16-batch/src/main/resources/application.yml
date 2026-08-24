@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: spring-batch-demo
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/batchdb
+    username: batch_user
+    password: batch_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: true
+
+logging:
+  level:
+    com.anupam.batch: INFO
+    org.springframework.batch: INFO

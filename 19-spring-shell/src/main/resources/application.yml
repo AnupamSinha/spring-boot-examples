@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: spring-shell-cli
+  shell:
+    interactive:
+      enabled: true
+  main:
+    banner-mode: off

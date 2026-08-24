@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: spring-boot-mongodb
+  data:
+    mongodb:
+      uri: mongodb://root:secret@localhost:27017/productdb?authSource=admin
+
+server:
+  port: 8080

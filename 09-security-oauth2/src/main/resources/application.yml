@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: spring-security-oauth2-demo
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/payment-realm
+
+server:
+  port: 8080

@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: spring-boot-websocket
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.anupam.websocket: DEBUG
+    org.springframework.web.socket: INFO

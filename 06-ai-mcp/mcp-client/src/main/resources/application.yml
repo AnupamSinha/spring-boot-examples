@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: mcp-client
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+
+    mcp:
+      client:
+        sse:
+          connections:
+            payment-tools:
+              url: http://localhost:8081
+
+server:
+  port: 8080
