@@ -38,6 +38,13 @@ A collection of production-ready Spring Boot examples covering fundamentals, AI,
 | 26 | [rate-limiter](./26-rate-limiter/) | Redis Sliding Window | [Rate Limiter](https://anupamsinha.github.io/posts/system-design-rate-limiter-spring-boot/) |
 | 27 | [url-shortener](./27-url-shortener/) | Base62 URL Shortener | [URL Shortener](https://anupamsinha.github.io/posts/system-design-url-shortener-spring-boot/) |
 | 28 | [notification-service](./28-notification-service/) | Multi-Channel (Email/SMS/Push) | [Notifications](https://anupamsinha.github.io/posts/system-design-notification-service-spring-boot/) |
+| 29 | [htmx](./29-htmx/) | HTMX + Thymeleaf Server-Rendered UI | [HTMX](https://anupamsinha.github.io/posts/spring-boot-htmx-server-rendered/) |
+| 30 | [react-fullstack](./30-react-fullstack/) | React + Spring Boot + JWT Auth | [React Full-Stack](https://anupamsinha.github.io/posts/react-spring-boot-fullstack-jwt/) |
+| 31 | [contract-testing](./31-contract-testing/) | Spring Cloud Contract (Producer + Consumer) | [Contract Testing](https://anupamsinha.github.io/posts/spring-cloud-contract-testing/) |
+| 32 | [gatling](./32-gatling/) | Load Testing with Gatling | [Gatling](https://anupamsinha.github.io/posts/spring-boot-gatling-load-testing/) |
+| 33 | [elasticsearch](./33-elasticsearch/) | Full-Text Search + Aggregations | [Elasticsearch](https://anupamsinha.github.io/posts/spring-boot-elasticsearch-full-text-search/) |
+| 34 | [kafka-streams](./34-kafka-streams/) | Real-Time Stream Processing | [Kafka Streams](https://anupamsinha.github.io/posts/spring-boot-kafka-streams-real-time/) |
+| 35 | [scheduling](./35-scheduling/) | @Scheduled + ShedLock Distributed Locks | [Scheduling](https://anupamsinha.github.io/posts/spring-boot-scheduling-distributed-locks/) |
 
 ---
 
