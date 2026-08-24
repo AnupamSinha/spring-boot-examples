@@ -20,7 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for PaymentRepository using a real PostgreSQL container.
- * No H2, no mocks — tests run against the same database engine as production.
+ *
+ * No H2, no mocks - tests run against the same database engine as production.
+ * AutoConfigureTestDatabase.Replace.NONE prevents Spring from substituting
+ * an embedded database.
+ *
+ * @author Anupam
  */
 @DataJpaTest
 @Testcontainers
@@ -39,6 +44,7 @@ class PaymentRepositoryIntegrationTest {
         paymentRepository.deleteAll();
     }
 
+    /** Verifies basic save and retrieval by transaction ID. */
     @Test
     void shouldSaveAndRetrievePayment() {
         Payment payment = new Payment("TXN-001", new BigDecimal("250.00"), PaymentStatus.COMPLETED);
@@ -53,6 +59,7 @@ class PaymentRepositoryIntegrationTest {
                 });
     }
 
+    /** Verifies filtering by payment status. */
     @Test
     void shouldFindPaymentsByStatus() {
         paymentRepository.save(new Payment("TXN-001", new BigDecimal("100.00"), PaymentStatus.COMPLETED));
@@ -65,6 +72,7 @@ class PaymentRepositoryIntegrationTest {
                 .containsExactlyInAnyOrder("TXN-001", "TXN-003");
     }
 
+    /** Verifies the custom JPQL query for high-value payments. */
     @Test
     void shouldFindHighValuePayments() {
         paymentRepository.save(new Payment("TXN-001", new BigDecimal("500.00"), PaymentStatus.COMPLETED));
@@ -76,6 +84,7 @@ class PaymentRepositoryIntegrationTest {
         assertThat(highValue.get(0).getAmount()).isEqualByComparingTo("1500.00"); // ordered desc
     }
 
+    /** Verifies empty result for non-existent transaction ID. */
     @Test
     void shouldReturnEmptyForNonExistentTransaction() {
         assertThat(paymentRepository.findByTransactionId("DOES-NOT-EXIST")).isEmpty();

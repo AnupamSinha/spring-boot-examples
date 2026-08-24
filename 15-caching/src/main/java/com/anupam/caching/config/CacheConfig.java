@@ -16,13 +16,26 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Configures a two-tier caching architecture (L1 + L2).
+ *
+ * L1 (Caffeine): In-process, zero-latency reads, ideal for hot data.
+ *   - Short TTL (60s) to limit staleness.
+ *   - 500 entry max to bound memory usage.
+ *
+ * L2 (Redis): Distributed, consistent across all app instances.
+ *   - Longer TTL (10 min) for broader cache coverage.
+ *   - Survives application restarts.
+ *   - JSON serialization for debuggability.
+ *
+ * @author Anupam
+ */
 @Configuration
 public class CacheConfig implements CachingConfigurer {
 
     /**
-     * L1 Cache — Caffeine (in-process).
-     * Short TTL (60s), limited size (500 entries).
-     * Fastest possible reads, no network hop.
+     * L1 Cache - Caffeine (primary, in-process).
+     * Fastest possible reads with no network hop.
      */
     @Bean
     @Primary
@@ -36,9 +49,9 @@ public class CacheConfig implements CachingConfigurer {
     }
 
     /**
-     * L2 Cache — Redis (distributed).
-     * Longer TTL (10 minutes), shared across application instances.
-     * Survives restarts and is consistent across nodes.
+     * L2 Cache - Redis (distributed).
+     * Shared across application instances, survives restarts.
+     * Uses JSON serialization for human-readable cache inspection.
      */
     @Bean
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {

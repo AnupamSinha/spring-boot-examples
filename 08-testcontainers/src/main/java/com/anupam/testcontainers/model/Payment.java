@@ -4,6 +4,14 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * JPA entity representing a payment transaction.
+ *
+ * Stored in PostgreSQL with a unique constraint on transactionId.
+ * Default currency is USD; creation timestamp is auto-set.
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "payments")
 public class Payment {
@@ -28,6 +36,7 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    // Default constructor sets sensible defaults
     public Payment() {
         this.createdAt = LocalDateTime.now();
         this.currency = "USD";

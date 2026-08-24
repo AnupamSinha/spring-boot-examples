@@ -7,13 +7,16 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 /**
- * Service demonstrating two agentic patterns:
+ * Service demonstrating two agentic execution patterns.
  *
- * 1. Blocking (call) — the model plans and executes all tool calls,
- *    returning a complete answer when done. Good for background jobs.
+ * <ul>
+ *   <li><b>Blocking (call)</b> - The model plans and executes all tool calls,
+ *       returning a complete answer when done. Good for background jobs and APIs.</li>
+ *   <li><b>Streaming (stream)</b> - Tokens stream to the client as the model
+ *       generates them, including during tool call loops. Good for chat UIs.</li>
+ * </ul>
  *
- * 2. Streaming (stream) — tokens stream to the client as the model
- *    generates them, including during tool call loops. Good for UIs.
+ * @author Anupam
  */
 @Service
 public class AgentService {
@@ -27,8 +30,8 @@ public class AgentService {
     }
 
     /**
-     * Blocking agent: model calls tools in sequence, returns final answer.
-     * The tool calling loop runs to completion before returning.
+     * Blocking agent: the model calls tools in sequence and returns
+     * the final answer once the full tool-calling loop completes.
      */
     public ChatResponse plan(String userMessage) {
         String answer = chatClient.prompt()
@@ -41,9 +44,8 @@ public class AgentService {
     }
 
     /**
-     * Streaming agent: tokens arrive as they're generated.
-     * The model still calls tools (blocking during the loop), but the
-     * final response streams token-by-token to the client via SSE.
+     * Streaming agent: tokens arrive as they're generated via Reactor Flux.
+     * Tool calls still execute synchronously, but the final text streams token-by-token.
      */
     public Flux<String> planStream(String userMessage) {
         return chatClient.prompt()

@@ -20,6 +20,11 @@ import static org.awaitility.Awaitility.await;
 
 /**
  * Integration test for Kafka producer/consumer using a real Kafka container.
+ *
+ * Uses @ServiceConnection so Spring auto-configures the Kafka bootstrap servers
+ * from the running Testcontainer, eliminating manual connection properties.
+ *
+ * @author Anupam
  */
 @SpringBootTest
 @Testcontainers
@@ -41,6 +46,7 @@ class KafkaIntegrationTest {
     @Autowired
     private PaymentEventConsumer consumer;
 
+    /** Verifies that a published payment event is consumed by the listener. */
     @Test
     void shouldPublishAndConsumePaymentEvent() throws Exception {
         consumer.reset();
@@ -54,6 +60,7 @@ class KafkaIntegrationTest {
                                 .anyMatch(e -> e.transactionId().equals("TXN-100")));
     }
 
+    /** Verifies that multiple events can be consumed in sequence. */
     @Test
     void shouldConsumeMultipleEvents() throws Exception {
         consumer.reset();

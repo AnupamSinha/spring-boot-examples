@@ -5,6 +5,17 @@ import java.util.List;
 
 /**
  * Structured output from the travel planning agent.
+ * Aggregates all information gathered across multiple tool calls.
+ *
+ * @param destination    the target city
+ * @param startDate      trip start date
+ * @param endDate        trip end date
+ * @param weather        weather forecast summary
+ * @param activities     recommended activities list
+ * @param flights        available flight options
+ * @param hotels         available hotel options
+ * @param budgetEstimate total estimated budget string
+ * @author Anupam
  */
 public record TravelPlan(
         String destination,

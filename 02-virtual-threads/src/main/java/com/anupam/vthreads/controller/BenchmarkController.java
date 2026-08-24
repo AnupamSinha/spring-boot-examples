@@ -13,6 +13,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Benchmark controller that compares platform threads vs. virtual threads
+ * under concurrent blocking I/O load.
+ *
+ * Platform threads are limited by the fixed pool size (2x available processors),
+ * while virtual threads scale to the number of tasks with minimal overhead.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api")
 public class BenchmarkController {
@@ -25,7 +34,10 @@ public class BenchmarkController {
 
     /**
      * Benchmarks N concurrent requests comparing platform threads vs virtual threads.
-     * Each request simulates a 500ms blocking IO call.
+     * Each request simulates a 500ms blocking I/O call.
+     *
+     * @param requests number of concurrent tasks to run (default: 100)
+     * @return comparison results including execution times and speedup factor
      */
     @GetMapping("/benchmark")
     public Map<String, Object> benchmark(@RequestParam(defaultValue = "100") int requests) {
@@ -44,6 +56,10 @@ public class BenchmarkController {
         );
     }
 
+    /**
+     * Runs tasks using a fixed platform thread pool.
+     * Pool size is capped at 2x available processors, causing queuing under high concurrency.
+     */
     private long runWithPlatformThreads(int requests) {
         long start = System.currentTimeMillis();
 
@@ -65,6 +81,10 @@ public class BenchmarkController {
         return System.currentTimeMillis() - start;
     }
 
+    /**
+     * Runs tasks using virtual threads (one per task).
+     * All tasks execute truly concurrently regardless of count.
+     */
     private long runWithVirtualThreads(int requests) {
         long start = System.currentTimeMillis();
 

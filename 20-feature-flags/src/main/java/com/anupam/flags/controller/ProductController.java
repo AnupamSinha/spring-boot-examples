@@ -12,7 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Product controller that uses feature flags to toggle behavior at runtime.
+ * Product controller that demonstrates feature-flag-driven behavior.
+ * <p>
+ * Uses Togglz feature flags to toggle between basic and premium search modes
+ * at runtime without code changes or redeployment.
+ * </p>
+ *
+ * @author Anupam
  */
 @RestController
 @RequestMapping("/api/products")
@@ -20,10 +26,26 @@ public class ProductController {
 
     private final FeatureManager featureManager;
 
+    /**
+     * Constructs the controller with the Togglz feature manager.
+     *
+     * @param featureManager the feature manager for checking feature states
+     */
     public ProductController(FeatureManager featureManager) {
         this.featureManager = featureManager;
     }
 
+    /**
+     * Searches products using either premium or basic search based on the PREMIUM_SEARCH flag.
+     * <p>
+     * When PREMIUM_SEARCH is active, returns full-text results with facets and suggestions.
+     * Otherwise, returns simple LIKE-based results. Also includes the current state of
+     * NEW_CHECKOUT and DARK_MODE flags in the response.
+     * </p>
+     *
+     * @param query the search query string; defaults to empty
+     * @return a response map containing search mode, results, and active feature states
+     */
     @GetMapping
     public ResponseEntity<Map<String, Object>> searchProducts(
             @RequestParam(defaultValue = "") String query) {
@@ -48,7 +70,7 @@ public class ProductController {
             );
         }
 
-        // Check if new checkout is available
+        // Enrich response with other feature flag states
         response = new java.util.HashMap<>(response);
         response.put("newCheckoutEnabled", featureManager.isActive(AppFeatures.NEW_CHECKOUT));
         response.put("darkModeEnabled", featureManager.isActive(AppFeatures.DARK_MODE));
@@ -56,6 +78,12 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Simulates a premium search with weighted scoring and highlights.
+     *
+     * @param query the search query
+     * @return a list of premium search result maps
+     */
     private List<Map<String, Object>> premiumSearch(String query) {
         return List.of(
             Map.of("id", "1", "name", "Premium Result: " + query, "score", 0.98, "highlights", true),
@@ -63,6 +91,12 @@ public class ProductController {
         );
     }
 
+    /**
+     * Simulates a basic search returning simple results.
+     *
+     * @param query the search query
+     * @return a list of basic search result maps
+     */
     private List<Map<String, Object>> basicSearch(String query) {
         return List.of(
             Map.of("id", "1", "name", "Basic Result: " + query)

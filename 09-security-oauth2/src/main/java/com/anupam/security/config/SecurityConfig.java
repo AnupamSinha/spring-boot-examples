@@ -13,11 +13,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Security configuration for OAuth2 Resource Server with JWT validation.
+ *
+ * Endpoint authorization:
+ * - /api/public/** : accessible without authentication
+ * - /api/admin/**  : requires ADMIN role
+ * - /api/payments/** : requires USER or ADMIN role
+ * - All other endpoints: require authentication
+ *
+ * Roles are extracted from the Keycloak-style "realm_access.roles" JWT claim.
+ *
+ * @author Anupam
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    /**
+     * Configures the security filter chain with URL-pattern authorization
+     * and JWT-based OAuth2 resource server protection.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -34,6 +51,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Custom JWT authentication converter that maps Keycloak realm_access.roles
+     * to Spring Security granted authorities with the ROLE_ prefix.
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();

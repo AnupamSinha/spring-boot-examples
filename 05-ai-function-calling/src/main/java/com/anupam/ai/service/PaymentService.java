@@ -13,22 +13,42 @@ import java.util.stream.Collectors;
 
 /**
  * Simulated payment service with in-memory data.
- * In production, this would query a database or call a downstream service.
+ *
+ * Provides lookup by transaction ID and recent payment history by customer.
+ * In production, this would query a database or call a downstream payments service.
+ *
+ * @author Anupam
  */
 @Service
 public class PaymentService {
 
+    /** In-memory store: transaction ID -> payment details. */
     private final Map<String, PaymentInfo> payments = new ConcurrentHashMap<>();
+
+    /** In-memory store: customer ID -> list of payment summaries. */
     private final Map<Long, List<PaymentSummary>> customerPayments = new ConcurrentHashMap<>();
 
     public PaymentService() {
         initializeSampleData();
     }
 
+    /**
+     * Finds a payment by its transaction ID.
+     *
+     * @param transactionId the unique transaction identifier (e.g., "TXN-9042")
+     * @return the payment info, or null if not found
+     */
     public PaymentInfo findByTransactionId(String transactionId) {
         return payments.get(transactionId);
     }
 
+    /**
+     * Retrieves the most recent payments for a given customer, ordered by date descending.
+     *
+     * @param customerId the customer's numeric ID
+     * @param limit      maximum number of results to return
+     * @return list of payment summaries (may be empty)
+     */
     public List<PaymentSummary> getRecentPayments(Long customerId, int limit) {
         List<PaymentSummary> all = customerPayments.getOrDefault(customerId, List.of());
         return all.stream()
@@ -37,6 +57,7 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
+    /** Populates the in-memory stores with sample payment data for demonstration. */
     private void initializeSampleData() {
         payments.put("TXN-9042", new PaymentInfo(
                 "TXN-9042", "COMPLETED", new BigDecimal("250.00"), "USD",

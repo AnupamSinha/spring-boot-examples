@@ -9,10 +9,22 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Scheduled task that performs periodic cleanup of stale data records.
+ * Runs every hour using fixedRate scheduling and is protected by ShedLock
+ * to ensure only one instance executes in a clustered environment.
+ *
+ * <p>The lock is held for at least 5 minutes and at most 55 minutes to prevent
+ * concurrent execution while allowing recovery from failed instances.</p>
+ *
+ * @author Anupam
+ */
 @Component
 public class DataCleanupTask {
 
     private static final Logger log = LoggerFactory.getLogger(DataCleanupTask.class);
+
+    /** Thread-safe reference tracking the last successful execution time. */
     private final AtomicReference<LocalDateTime> lastRunTime = new AtomicReference<>();
 
     /**
@@ -34,6 +46,12 @@ public class DataCleanupTask {
         log.info("Data cleanup completed. Deleted {} old records.", deletedCount);
     }
 
+    /**
+     * Performs the actual cleanup logic. In a production application, this would
+     * execute a database DELETE for records older than 30 days.
+     *
+     * @return the number of records deleted
+     */
     private int performCleanup() {
         // In a real app, this would delete from a database:
         // DELETE FROM audit_log WHERE created_at < NOW() - INTERVAL '30 days'
@@ -45,6 +63,11 @@ public class DataCleanupTask {
         return 42; // simulated count
     }
 
+    /**
+     * Returns the timestamp of the last successful task execution.
+     *
+     * @return the last run time, or null if the task has never executed
+     */
     public LocalDateTime getLastRunTime() {
         return lastRunTime.get();
     }

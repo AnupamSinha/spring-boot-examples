@@ -7,7 +7,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * Push notification channel implementation (simulated).
- * In production, this would integrate with Firebase Cloud Messaging (FCM) or APNs.
+ * <p>
+ * In production, this would integrate with Firebase Cloud Messaging (FCM)
+ * or Apple Push Notification service (APNs).
+ * </p>
+ *
+ * @author Anupam
  */
 @Component
 public class PushChannel implements NotificationChannel {
@@ -19,18 +24,18 @@ public class PushChannel implements NotificationChannel {
         return NotificationRequest.Channel.PUSH;
     }
 
+    /**
+     * Sends a push notification to the device (simulated).
+     * <p>
+     * In production, this would call the FCM or APNs API with the
+     * device token from the recipient field.
+     * </p>
+     *
+     * @param request the notification request containing the device token and template
+     */
     @Override
     public void send(NotificationRequest request) {
-        // In production: call FCM API
-        // FirebaseMessaging.getInstance().send(
-        //     Message.builder()
-        //         .setToken(request.recipient())  // device token
-        //         .setNotification(Notification.builder()
-        //             .setTitle(resolveTitle(request))
-        //             .setBody(resolveBody(request))
-        //             .build())
-        //         .build());
-
+        // In production: call FCM API with the device token and notification payload
         log.info("[PUSH] Sending to device token {}: template={}",
                 request.recipient(), request.templateName());
         log.info("[PUSH] Delivered successfully to: {}", request.recipient());

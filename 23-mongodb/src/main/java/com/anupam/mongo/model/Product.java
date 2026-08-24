@@ -8,30 +8,54 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * MongoDB document representing a product in the catalog.
+ * <p>
+ * Stored in the "products" collection. Includes indexed fields for name and category
+ * to support efficient querying, and an embedded {@link Specification} sub-document
+ * for product details.
+ * </p>
+ *
+ * @author Anupam
+ */
 @Document(collection = "products")
 public class Product {
 
+    /** MongoDB-generated unique document identifier. */
     @Id
     private String id;
 
+    /** Product name with an index for text-search queries. */
     @Indexed
     private String name;
 
     private String description;
 
+    /** Product category with an index for filtered lookups. */
     @Indexed
     private String category;
 
     private BigDecimal price;
 
+    /** Embedded sub-document containing detailed product specifications. */
     private Specification specification;
 
+    /** Flexible tags for filtering and categorization. */
     private List<String> tags;
 
     private Instant createdAt;
 
     private Instant updatedAt;
 
+    /**
+     * Embedded record for product specifications such as brand, model, and physical attributes.
+     *
+     * @param brand      the manufacturer brand
+     * @param model      the product model name
+     * @param weight     the weight in kilograms
+     * @param dimensions the physical dimensions (e.g., "30x20x10 cm")
+     * @param color      the primary color
+     */
     public record Specification(
             String brand,
             String model,
@@ -40,11 +64,22 @@ public class Product {
             String color
     ) {}
 
+    /** Default constructor — sets creation and update timestamps to now. */
     public Product() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
+    /**
+     * Constructs a product with all catalog attributes.
+     *
+     * @param name          the product name
+     * @param description   the product description
+     * @param category      the product category
+     * @param price         the product price
+     * @param specification the detailed product specifications
+     * @param tags          searchable tags for the product
+     */
     public Product(String name, String description, String category, BigDecimal price,
                    Specification specification, List<String> tags) {
         this();

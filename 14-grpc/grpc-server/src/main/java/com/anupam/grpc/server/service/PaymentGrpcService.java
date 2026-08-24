@@ -12,13 +12,25 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * gRPC service implementation for payment operations.
+ *
+ * Implements the PaymentService proto definition with:
+ * - Unary RPC: getPayment (single request/response)
+ * - Server streaming RPC: listPayments (single request, stream of responses)
+ *
+ * Uses proper gRPC Status codes for error handling (NOT_FOUND, INVALID_ARGUMENT).
+ *
+ * @author Anupam
+ */
 @GrpcService
 public class PaymentGrpcService extends PaymentServiceGrpc.PaymentServiceImplBase {
 
+    /** In-memory payment store seeded with sample data. */
     private final Map<String, PaymentResponse> payments = new ConcurrentHashMap<>();
 
     public PaymentGrpcService() {
-        // Seed some sample data
+        // Seed sample data for demonstration
         payments.put("PAY-001", PaymentResponse.newBuilder()
                 .setPaymentId("PAY-001")
                 .setUserId("USER-1")
@@ -45,6 +57,10 @@ public class PaymentGrpcService extends PaymentServiceGrpc.PaymentServiceImplBas
                 .build());
     }
 
+    /**
+     * Unary RPC: retrieves a single payment by ID.
+     * Returns INVALID_ARGUMENT if ID is empty, NOT_FOUND if payment doesn't exist.
+     */
     @Override
     public void getPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
         String paymentId = request.getPaymentId();
@@ -69,6 +85,10 @@ public class PaymentGrpcService extends PaymentServiceGrpc.PaymentServiceImplBas
         responseObserver.onCompleted();
     }
 
+    /**
+     * Server streaming RPC: streams all payments for a given user.
+     * Each matching payment is sent as a separate message in the stream.
+     */
     @Override
     public void listPayments(ListPaymentsRequest request, StreamObserver<PaymentResponse> responseObserver) {
         String userId = request.getUserId();

@@ -9,6 +9,14 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Product service that builds dynamic queries using JPA Specifications.
+ *
+ * Specifications are composed based on which filter parameters are provided.
+ * This avoids the need for multiple repository methods or conditional JPQL strings.
+ *
+ * @author Anupam
+ */
 @Service
 public class ProductService {
 
@@ -19,8 +27,14 @@ public class ProductService {
     }
 
     /**
-     * Builds a dynamic query by composing Specifications based on the provided filter parameters.
-     * Null parameters are ignored — only non-null values contribute predicates.
+     * Builds a dynamic query by composing Specifications based on provided filters.
+     * Null/blank parameters are ignored - only non-null values add predicates.
+     *
+     * @param category category filter (optional)
+     * @param minPrice minimum price (requires maxPrice, optional)
+     * @param maxPrice maximum price (requires minPrice, optional)
+     * @param name     keyword search in product name (optional)
+     * @return products matching all provided criteria
      */
     public List<Product> findProducts(String category, BigDecimal minPrice, BigDecimal maxPrice, String name) {
         Specification<Product> spec = Specification.where(null);

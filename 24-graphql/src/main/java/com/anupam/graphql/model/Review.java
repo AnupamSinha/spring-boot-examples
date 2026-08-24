@@ -3,6 +3,15 @@ package com.anupam.graphql.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * JPA entity representing a product review.
+ * <p>
+ * Mapped to the "reviews" table. Each review belongs to exactly one {@link Product}
+ * via a many-to-one relationship (lazy-loaded for performance).
+ * </p>
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "reviews")
 public class Review {
@@ -23,14 +32,24 @@ public class Review {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    /** The product this review belongs to (lazy-loaded to avoid unnecessary joins). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    /** Default constructor — sets creation timestamp to now. */
     public Review() {
         this.createdAt = LocalDateTime.now();
     }
 
+    /**
+     * Constructs a review with all required fields.
+     *
+     * @param author  the name of the reviewer
+     * @param comment the review text
+     * @param rating  the rating (typically 1-5)
+     * @param product the product being reviewed
+     */
     public Review(String author, String comment, int rating, Product product) {
         this();
         this.author = author;

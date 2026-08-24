@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * REST controller demonstrating GraalVM native image capabilities.
+ *
+ * Provides endpoints to:
+ * - Return a greeting (proves the app runs as native binary)
+ * - Demonstrate reflection working in a native image
+ * - Report application startup time (showcases near-instant boot)
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api")
 public class GreetingController {
@@ -24,6 +34,7 @@ public class GreetingController {
         this.startupTimeListener = startupTimeListener;
     }
 
+    /** Returns a greeting with the current timestamp and active profile. */
     @GetMapping("/greet")
     public Greeting greet() {
         return new Greeting(
@@ -33,6 +44,11 @@ public class GreetingController {
         );
     }
 
+    /**
+     * Demonstrates that reflection works correctly in the native image.
+     * Uses @RegisterReflectionForBinding to ensure the Greeting class
+     * metadata is available at runtime.
+     */
     @GetMapping("/reflect")
     @RegisterReflectionForBinding(Greeting.class)
     public Map<String, Object> reflect() {
@@ -47,6 +63,10 @@ public class GreetingController {
         );
     }
 
+    /**
+     * Reports the application startup duration.
+     * Native images typically start in tens of milliseconds vs. seconds for JVM mode.
+     */
     @GetMapping("/startup")
     public Map<String, Object> startup() {
         var duration = startupTimeListener.getStartupDuration();

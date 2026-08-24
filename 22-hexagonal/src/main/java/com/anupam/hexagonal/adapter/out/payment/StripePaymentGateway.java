@@ -9,14 +9,32 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Output adapter — implements the PaymentGateway port using Stripe.
- * In a real app, this would call the Stripe SDK.
+ * Output adapter — implements the {@link PaymentGateway} port using Stripe.
+ * <p>
+ * In a production application, this adapter would use the Stripe SDK to process
+ * real payments. The current implementation simulates a successful charge for
+ * demonstration purposes.
+ * </p>
+ *
+ * @author Anupam
  */
 @Component
 public class StripePaymentGateway implements PaymentGateway {
 
     private static final Logger log = LoggerFactory.getLogger(StripePaymentGateway.class);
 
+    /**
+     * Charges the specified customer for the given amount.
+     * <p>
+     * This is a simulated implementation. In production, it would invoke
+     * Stripe's Charge API via the SDK.
+     * </p>
+     *
+     * @param customerId the customer to charge
+     * @param amount     the monetary amount to charge
+     * @param currency   the currency code (e.g., "USD")
+     * @return the payment result containing a transaction ID and status
+     */
     @Override
     public PaymentResult charge(String customerId, BigDecimal amount, String currency) {
         log.info("Charging customer {} amount {} {}", customerId, amount, currency);

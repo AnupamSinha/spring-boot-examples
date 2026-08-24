@@ -7,6 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for order creation.
+ *
+ * POST /api/orders creates an order, publishes an event to Kafka,
+ * and returns the order details to the caller.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -17,6 +25,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    /** Creates a new order and publishes the OrderCreatedEvent to Kafka. */
     @PostMapping
     public ResponseEntity<OrderCreatedEvent> createOrder(@RequestBody CreateOrderRequest request) {
         OrderCreatedEvent event = orderService.createOrder(request);

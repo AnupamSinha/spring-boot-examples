@@ -7,7 +7,13 @@ import java.time.Instant;
 
 /**
  * JPA entity — lives in the adapter layer, not the domain.
- * Maps between database schema and domain model.
+ * <p>
+ * Maps between the database schema and the domain model. This separation ensures
+ * that JPA annotations and persistence concerns do not leak into the domain.
+ * Order items are stored as a serialized JSON string for simplicity.
+ * </p>
+ *
+ * @author Anupam
  */
 @Entity
 @Table(name = "orders")
@@ -34,8 +40,20 @@ public class OrderEntity {
     @Column(nullable = false)
     private Instant createdAt;
 
+    /** Default constructor required by JPA. */
     protected OrderEntity() {}
 
+    /**
+     * Constructs a fully populated order entity.
+     *
+     * @param id          the unique order identifier
+     * @param customerId  the owning customer's identifier
+     * @param status      the current order status
+     * @param totalAmount the total monetary value
+     * @param itemCount   the number of line items
+     * @param itemsJson   the JSON-serialized line items
+     * @param createdAt   when the order was created
+     */
     public OrderEntity(String id, String customerId, String status,
                        BigDecimal totalAmount, int itemCount, String itemsJson, Instant createdAt) {
         this.id = id;

@@ -12,7 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller for the MCP-powered AI assistant.
- * Tools are discovered automatically from the MCP server — no local @Tool definitions needed.
+ *
+ * Tools are discovered automatically from the MCP server at startup.
+ * No local @Tool definitions are needed - the model invokes remote tools
+ * via the Model Context Protocol transport (stdio or SSE).
+ *
+ * @author Anupam
  */
 @RestController
 @RequestMapping("/api/v1/assistant")
@@ -24,6 +29,10 @@ public class AssistantController {
         this.chatClient = chatClient;
     }
 
+    /**
+     * POST /api/v1/assistant/chat - Sends a user message to the AI.
+     * The model may invoke MCP tools before producing its response.
+     */
     @PostMapping("/chat")
     public ResponseEntity<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
         String answer = chatClient.prompt()

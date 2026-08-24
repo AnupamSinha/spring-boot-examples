@@ -11,6 +11,15 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Kafka consumer that processes payments for incoming orders.
+ *
+ * Business rule: orders over $10,000 are automatically declined (FAILED),
+ * all others are approved (COMPLETED). After processing, publishes a
+ * PaymentCompletedEvent to the "payments" topic.
+ *
+ * @author Anupam
+ */
 @Service
 public class PaymentProcessor {
 
@@ -21,11 +30,15 @@ public class PaymentProcessor {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    /**
+     * Listens to the "orders" topic and processes each order's payment.
+     * Publishes the result to the "payments" topic for notification handling.
+     */
     @KafkaListener(topics = "orders", groupId = "payment-service")
     public void handleOrderCreated(OrderCreatedEvent event) {
         log.info("Processing payment for order: {} amount: {}", event.orderId(), event.totalAmount());
 
-        // Simulate payment processing
+        // Simple business rule: reject orders over $10,000
         String status = event.totalAmount().doubleValue() > 10000 ? "FAILED" : "COMPLETED";
         String paymentId = "PAY-" + UUID.randomUUID().toString().substring(0, 8);
 

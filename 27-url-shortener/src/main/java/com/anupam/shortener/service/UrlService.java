@@ -11,6 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * Core service for URL shortening, resolution, and analytics.
+ * <p>
+ * Handles the business logic of creating shortened URLs using Base62 encoding
+ * of database IDs, resolving short codes back to original URLs with expiration
+ * checks, and providing click statistics.
+ * </p>
+ *
+ * @author Anupam
+ */
 @Service
 public class UrlService {
 
@@ -18,6 +28,13 @@ public class UrlService {
     private final Base62Encoder base62Encoder;
     private final String baseUrl;
 
+    /**
+     * Constructs the URL service with its dependencies.
+     *
+     * @param urlRepository the repository for URL mapping persistence
+     * @param base62Encoder the encoder for generating short codes
+     * @param baseUrl       the application's base URL (e.g., http://localhost:8080)
+     */
     public UrlService(UrlRepository urlRepository,
                       Base62Encoder base62Encoder,
                       @Value("${app.base-url}") String baseUrl) {
@@ -29,6 +46,9 @@ public class UrlService {
     /**
      * Shortens a URL by persisting it first (to get auto-generated ID),
      * then encoding the ID to Base62 as the short code.
+     *
+     * @param request the shorten request containing the URL and optional expiration
+     * @return the response containing the generated short URL
      */
     @Transactional
     public ShortenResponse shorten(ShortenRequest request) {
@@ -36,6 +56,7 @@ public class UrlService {
         mapping.setOriginalUrl(request.url());
         mapping.setShortCode("temp"); // placeholder, updated after save
 
+        // Set expiration if requested
         if (request.expiresInDays() != null && request.expiresInDays() > 0) {
             mapping.setExpiresAt(LocalDateTime.now().plusDays(request.expiresInDays()));
         }
@@ -43,7 +64,7 @@ public class UrlService {
         // Save to get the auto-generated ID
         mapping = urlRepository.save(mapping);
 
-        // Encode ID to Base62 for the short code
+        // Encode the database ID to Base62 for a compact short code
         String shortCode = base62Encoder.encode(mapping.getId());
         mapping.setShortCode(shortCode);
         mapping = urlRepository.save(mapping);
@@ -53,24 +74,36 @@ public class UrlService {
     }
 
     /**
-     * Resolves a short code to the original URL. Increments click count.
-     * Throws UrlNotFoundException if code doesn't exist or URL is expired.
+     * Resolves a short code to the original URL. Increments the click count.
+     * <p>
+     * Throws {@link UrlNotFoundException} if the code doesn't exist or the URL has expired.
+     * </p>
+     *
+     * @param shortCode the Base62-encoded short code to resolve
+     * @return the original URL
+     * @throws UrlNotFoundException if the short code is not found or has expired
      */
     @Transactional
     public String resolve(String shortCode) {
         UrlMapping mapping = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(() -> new UrlNotFoundException("Short URL not found: " + shortCode));
 
+        // Check if the URL has expired
         if (mapping.getExpiresAt() != null && mapping.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new UrlNotFoundException("Short URL has expired: " + shortCode);
         }
 
+        // Track the click for analytics
         urlRepository.incrementClickCount(shortCode);
         return mapping.getOriginalUrl();
     }
 
     /**
-     * Returns stats for a short code including click count and metadata.
+     * Returns statistics for a short code including click count and metadata.
+     *
+     * @param shortCode the short code to look up
+     * @return the URL mapping entity with all stats
+     * @throws UrlNotFoundException if the short code is not found
      */
     @Transactional(readOnly = true)
     public UrlMapping getStats(String shortCode) {

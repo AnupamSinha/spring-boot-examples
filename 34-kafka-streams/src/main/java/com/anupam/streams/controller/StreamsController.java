@@ -15,16 +15,35 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller providing access to Kafka Streams state store data.
+ * Exposes endpoints to query windowed payment counts by currency and
+ * the current state of the Kafka Streams application.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api/streams")
 public class StreamsController {
 
     private final StreamsBuilderFactoryBean factoryBean;
 
+    /**
+     * Constructs the StreamsController with the Kafka Streams factory bean.
+     *
+     * @param factoryBean the Spring-managed StreamsBuilderFactoryBean
+     */
     public StreamsController(StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
 
+    /**
+     * Queries the windowed state store to retrieve payment counts per currency
+     * within the last 60 seconds. Returns an error message if Kafka Streams
+     * is not yet initialized or the state store is unavailable.
+     *
+     * @return a map containing the time window and payment counts by currency
+     */
     @GetMapping("/counts")
     public Map<String, Object> getPaymentCounts() {
         Map<String, Object> result = new HashMap<>();
@@ -36,6 +55,7 @@ public class StreamsController {
         }
 
         try {
+            // Access the windowed state store for payment counts
             ReadOnlyWindowStore<String, Long> windowStore = kafkaStreams.store(
                     StoreQueryParameters.fromNameAndType(
                             PaymentStreamTopology.STATE_STORE_NAME,
@@ -43,9 +63,11 @@ public class StreamsController {
                     )
             );
 
+            // Define the query window: last 60 seconds
             Instant now = Instant.now();
             Instant oneMinuteAgo = now.minusSeconds(60);
 
+            // Fetch counts for each tracked currency
             Map<String, Long> counts = new HashMap<>();
             for (String currency : new String[]{"USD", "EUR", "GBP", "JPY", "INR"}) {
                 try (WindowStoreIterator<Long> iterator =
@@ -69,6 +91,12 @@ public class StreamsController {
         return result;
     }
 
+    /**
+     * Returns the current state of the Kafka Streams application
+     * (e.g., RUNNING, REBALANCING, NOT_INITIALIZED).
+     *
+     * @return a map containing the current Kafka Streams state
+     */
     @GetMapping("/status")
     public Map<String, String> getStatus() {
         KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();

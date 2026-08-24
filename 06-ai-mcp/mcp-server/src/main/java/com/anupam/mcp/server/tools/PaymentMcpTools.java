@@ -13,17 +13,21 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Tools exposed via MCP (Model Context Protocol).
- * These are annotated with @Tool and auto-registered as MCP tools
- * by the spring-ai-starter-mcp-server-webmvc auto-configuration.
+ * MCP tools exposed to remote clients via the Model Context Protocol.
  *
+ * These @Tool-annotated methods are auto-registered by spring-ai-starter-mcp-server-webmvc.
  * Any MCP-compatible client (Spring AI, Claude Desktop, etc.) can discover
- * and invoke these tools over the SSE transport.
+ * and invoke them over the SSE transport without knowing the implementation details.
+ *
+ * @author Anupam
  */
 @Component
 public class PaymentMcpTools {
 
+    /** In-memory payment store for demonstration purposes. */
     private final Map<String, PaymentInfo> payments = new ConcurrentHashMap<>();
+
+    /** Static exchange rates relative to USD. */
     private static final Map<String, BigDecimal> RATES_TO_USD = Map.of(
             "USD", BigDecimal.ONE,
             "EUR", new BigDecimal("0.92"),
@@ -38,6 +42,10 @@ public class PaymentMcpTools {
         initSampleData();
     }
 
+    /**
+     * Looks up payment details by transaction ID.
+     * Throws if the transaction is not found.
+     */
     @Tool(description = "Get the current status and details of a payment by its transaction ID")
     public PaymentInfo getPaymentStatus(
             @ToolParam(description = "Transaction ID, e.g. TXN-9042") String transactionId) {
@@ -49,6 +57,9 @@ public class PaymentMcpTools {
         return info;
     }
 
+    /**
+     * Computes the exchange rate between two currencies using USD as the pivot.
+     */
     @Tool(description = "Get the current exchange rate between two currencies. " +
             "Supported: USD, EUR, GBP, JPY, INR, CAD, AUD")
     public ExchangeRate getExchangeRate(
@@ -67,6 +78,10 @@ public class PaymentMcpTools {
         return new ExchangeRate(from.toUpperCase(), to.toUpperCase(), rate, LocalDateTime.now());
     }
 
+    /**
+     * Converts a payment's amount to a target currency.
+     * Chains getPaymentStatus and getExchangeRate internally.
+     */
     @Tool(description = "Calculate the total amount in a target currency for a given payment transaction")
     public String convertPaymentAmount(
             @ToolParam(description = "Transaction ID") String transactionId,
@@ -81,6 +96,7 @@ public class PaymentMcpTools {
                 converted, targetCurrency, rate.rate());
     }
 
+    /** Populates the in-memory store with sample payment data. */
     private void initSampleData() {
         payments.put("TXN-9042", new PaymentInfo(
                 "TXN-9042", "COMPLETED", new BigDecimal("250.00"), "USD",
