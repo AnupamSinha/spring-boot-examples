@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: spring-boot-elasticsearch
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.data.elasticsearch: DEBUG
+    com.anupam.search: DEBUG

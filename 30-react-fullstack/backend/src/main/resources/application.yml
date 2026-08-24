@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: react-fullstack-backend
+  datasource:
+    url: jdbc:h2:mem:productdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+
+app:
+  jwt:
+    secret: my-super-secret-key-that-is-at-least-256-bits-long-for-hmac-sha
+    expiration-hours: 24
+
+server:
+  port: 8080

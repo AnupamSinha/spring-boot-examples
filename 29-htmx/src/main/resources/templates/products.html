@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Products — HTMX + Spring Boot</title>
+    <script src="/webjars/htmx.org/dist/htmx.min.js"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f7fafc; font-weight: 600; }
+        tr:hover { background: #f7fafc; }
+        .form-row { display: flex; gap: 0.5rem; margin-top: 1rem; align-items: end; }
+        .form-row input { padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 4px; }
+        .form-row button { padding: 0.5rem 1rem; background: #3182ce; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .form-row button:hover { background: #2c5282; }
+        .delete-btn { background: #e53e3e; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background: #c53030; }
+        .search-input { padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 4px; width: 300px; margin-bottom: 1rem; }
+        h1 { color: #2d3748; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline; }
+    </style>
+</head>
+<body>
+    <h1>Products</h1>
+
+    <!-- Active Search -->
+    <input type="search"
+           class="search-input"
+           name="query"
+           placeholder="Search products..."
+           hx-get="/products/search"
+           hx-trigger="input changed delay:500ms, search"
+           hx-target="#product-table-body"
+           hx-swap="innerHTML"/>
+
+    <!-- Product Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="product-table-body"
+               hx-get="/products/list"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+            <!-- Fragments loaded via HTMX -->
+        </tbody>
+    </table>
+
+    <!-- Add Product Form -->
+    <form class="form-row"
+          hx-post="/products"
+          hx-target="#product-table-body"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()">
+        <input type="text" name="name" placeholder="Product name" required/>
+        <input type="number" name="price" step="0.01" placeholder="Price" required/>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <!-- Refresh button -->
+    <div style="margin-top: 1rem;">
+        <button hx-get="/products/list"
+                hx-target="#product-table-body"
+                hx-swap="innerHTML"
+                style="padding: 0.5rem 1rem; cursor: pointer;">
+            Refresh List
+        </button>
+        <span class="htmx-indicator">Loading...</span>
+    </div>
+</body>
+</html>

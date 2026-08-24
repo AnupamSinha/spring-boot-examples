@@ -1,0 +1,16 @@
+<th:block th:each="product : ${products}">
+    <tr th:id="'product-' + ${product.id()}">
+        <td th:text="${product.id()}"></td>
+        <td th:text="${product.name()}"></td>
+        <td th:text="'$' + ${product.price()}"></td>
+        <td>
+            <button class="delete-btn"
+                    th:attr="hx-delete='/products/' + ${product.id()}"
+                    hx-confirm="Are you sure?"
+                    th:attr="hx-target='#product-' + ${product.id()}"
+                    hx-swap="outerHTML">
+                Delete
+            </button>
+        </td>
+    </tr>
+</th:block>
