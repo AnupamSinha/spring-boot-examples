@@ -4,6 +4,15 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * JPA entity representing a product with database indexes for performance.
+ *
+ * Includes indexes on name and category columns to speed up
+ * filtered queries that would otherwise require full table scans.
+ * Lifecycle callbacks auto-manage timestamp fields.
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "products", indexes = {
         @Index(name = "idx_product_name", columnList = "name"),
@@ -36,17 +45,20 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    /** Sets creation and update timestamps on initial persist. */
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
+    /** Updates the modification timestamp on every update. */
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Default constructor required by JPA
     public Product() {
     }
 

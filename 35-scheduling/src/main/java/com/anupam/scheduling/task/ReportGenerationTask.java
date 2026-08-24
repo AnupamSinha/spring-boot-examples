@@ -9,10 +9,19 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Scheduled task that generates daily reports using a cron expression.
+ * Protected by ShedLock to ensure exactly-once execution in a clustered
+ * environment. The lock is held for at least 5 minutes and at most 30 minutes.
+ *
+ * @author Anupam
+ */
 @Component
 public class ReportGenerationTask {
 
     private static final Logger log = LoggerFactory.getLogger(ReportGenerationTask.class);
+
+    /** Thread-safe reference tracking the last successful execution time. */
     private final AtomicReference<LocalDateTime> lastRunTime = new AtomicReference<>();
 
     /**
@@ -30,7 +39,7 @@ public class ReportGenerationTask {
         lastRunTime.set(LocalDateTime.now());
 
         try {
-            // Simulate report generation work
+            // Simulate report generation work (data aggregation, PDF creation, etc.)
             Thread.sleep(5000);
             log.info("Daily report generated successfully at {}", lastRunTime.get());
         } catch (InterruptedException e) {
@@ -39,6 +48,11 @@ public class ReportGenerationTask {
         }
     }
 
+    /**
+     * Returns the timestamp of the last successful report generation.
+     *
+     * @return the last run time, or null if the task has never executed
+     */
     public LocalDateTime getLastRunTime() {
         return lastRunTime.get();
     }

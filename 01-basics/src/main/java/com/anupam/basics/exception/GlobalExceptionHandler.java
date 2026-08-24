@@ -11,9 +11,21 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Centralized exception handler for the application.
+ *
+ * Uses @ControllerAdvice to intercept exceptions thrown by any controller
+ * and return consistent, structured JSON error responses with timestamps.
+ *
+ * @author Anupam
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Handles resource-not-found errors (e.g., product lookup by invalid ID).
+     * Returns HTTP 404 with a descriptive message.
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -24,6 +36,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    /**
+     * Handles Bean Validation failures (e.g., @NotBlank, @Positive violations).
+     * Returns HTTP 400 with a map of field-level error messages.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -39,6 +55,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    /**
+     * Catch-all handler for any unhandled exceptions.
+     * Returns HTTP 500 to avoid leaking stack traces to the client.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         Map<String, Object> body = new HashMap<>();

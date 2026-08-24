@@ -12,13 +12,26 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * REST controller exposing payment endpoints for the Contract Testing Producer.
+ * Provides an in-memory payment store with sample data to demonstrate
+ * contract-driven API development.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
+    /** Thread-safe in-memory store for payment records. */
     private final Map<Long, Payment> payments = new ConcurrentHashMap<>();
 
+    /**
+     * Initializes the controller with sample payment data.
+     * Pre-populates two payment records for contract testing purposes.
+     */
     public PaymentController() {
+        // Seed sample payment data for contract verification
         payments.put(1L, new Payment(
                 1L,
                 "ORD-2024-001",
@@ -37,6 +50,12 @@ public class PaymentController {
         ));
     }
 
+    /**
+     * Retrieves a payment by its unique identifier.
+     *
+     * @param id the payment identifier
+     * @return 200 OK with the payment if found, or 404 Not Found
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Payment> getPayment(@PathVariable Long id) {
         Payment payment = payments.get(id);

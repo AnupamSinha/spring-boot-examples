@@ -8,6 +8,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * JPA entity representing a product with audit timestamps.
+ *
+ * Uses Spring Data JPA Auditing to automatically track creation
+ * and modification times without manual intervention.
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "products")
 @EntityListeners(AuditingEntityListener.class)
@@ -26,14 +34,17 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    /** Automatically set on first persist by JPA Auditing. */
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    /** Automatically updated on every save by JPA Auditing. */
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
 
+    // Protected no-arg constructor required by JPA
     protected Product() {
     }
 

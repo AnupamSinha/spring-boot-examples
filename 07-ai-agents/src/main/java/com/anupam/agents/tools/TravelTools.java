@@ -12,8 +12,14 @@ import java.util.Map;
 
 /**
  * Tools for the travel planning agent.
- * The model chains these tools to build a complete travel plan:
- * 1. Check weather → 2. Search flights → 3. Search hotels → 4. Get activities
+ *
+ * The model chains these tools in a prescribed order to build a complete travel plan:
+ * 1. Check weather -> 2. Search flights -> 3. Search hotels -> 4. Get activities -> 5. Calculate budget
+ *
+ * Each method returns simulated data for demonstration purposes.
+ * In production, these would call real APIs (flight aggregators, hotel booking systems, etc.).
+ *
+ * @author Anupam
  */
 @Component
 public class TravelTools {
@@ -27,6 +33,7 @@ public class TravelTools {
             "bali", "Tropical, 29°C. Brief afternoon showers. Ideal for surfing."
     );
 
+    /** Gets the weather forecast to help with packing and activity planning. */
     @Tool(description = "Get the weather forecast for a city during the next week. " +
             "Use this to help decide what to pack and what activities are suitable.")
     public String getWeatherForecast(
@@ -39,6 +46,7 @@ public class TravelTools {
         return weather;
     }
 
+    /** Searches for available flights between two cities on a given date. */
     @Tool(description = "Search for available flights to a destination. " +
             "Returns a list of flight options with airlines, times, and prices.")
     public List<FlightOption> searchFlights(
@@ -46,7 +54,6 @@ public class TravelTools {
             @ToolParam(description = "Destination city") String to,
             @ToolParam(description = "Travel date in YYYY-MM-DD format") String date) {
 
-        // Simulated flight results
         return List.of(
                 new FlightOption("Air France", from + " 08:00", to + " 11:30",
                         new BigDecimal("450.00"), "USD"),
@@ -57,6 +64,7 @@ public class TravelTools {
         );
     }
 
+    /** Searches for available hotels in a city for a given check-in date and duration. */
     @Tool(description = "Search for available hotels in a city. " +
             "Returns options with star rating, price per night, and guest rating.")
     public List<HotelOption> searchHotels(
@@ -64,7 +72,6 @@ public class TravelTools {
             @ToolParam(description = "Check-in date in YYYY-MM-DD format") String checkIn,
             @ToolParam(description = "Number of nights") int nights) {
 
-        // Simulated hotel results
         return List.of(
                 new HotelOption("Grand Palace Hotel", 5, new BigDecimal("320.00"), "USD", 4.8),
                 new HotelOption("City Center Inn", 3, new BigDecimal("120.00"), "USD", 4.2),
@@ -73,13 +80,13 @@ public class TravelTools {
         );
     }
 
+    /** Gets recommended activities and attractions for a destination city. */
     @Tool(description = "Get recommended activities and attractions for a city. " +
             "Returns a curated list based on the weather and time of year.")
     public List<String> getActivities(
             @ToolParam(description = "City name") String city,
             @ToolParam(description = "Type: adventure, culture, food, relaxation", required = false) String type) {
 
-        // Simulated activity suggestions
         Map<String, List<String>> activities = Map.of(
                 "paris", List.of("Visit the Louvre Museum", "Walk along the Seine at sunset",
                         "Explore Montmartre", "Try croissants at Du Pain et des Idées",
@@ -99,6 +106,10 @@ public class TravelTools {
         );
     }
 
+    /**
+     * Calculates an estimated total trip budget with a detailed breakdown.
+     * Assumes round-trip flights and per-day costs for food and activities.
+     */
     @Tool(description = "Calculate the estimated total budget for a trip including flights, " +
             "hotel, food, and activities. Provides a breakdown.")
     public String calculateBudget(

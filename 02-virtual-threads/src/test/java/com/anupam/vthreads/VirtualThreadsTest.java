@@ -15,6 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Integration tests verifying that virtual threads are properly configured
+ * and that the application handles concurrent blocking operations efficiently.
+ *
+ * @author Anupam
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class VirtualThreadsTest {
 
@@ -24,6 +30,7 @@ class VirtualThreadsTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    /** Verifies that HTTP requests are served by virtual threads. */
     @Test
     void shouldUseVirtualThreadsWhenConfigIsActive() {
         Map<String, Object> response = restTemplate.getForObject(
@@ -33,6 +40,7 @@ class VirtualThreadsTest {
         assertThat(response.get("isVirtual")).isEqualTo(true);
     }
 
+    /** Verifies that the blocking endpoint completes and reports virtual thread usage. */
     @Test
     void shouldCompleteBlockingEndpoint() {
         Map<String, Object> response = restTemplate.getForObject(
@@ -43,6 +51,10 @@ class VirtualThreadsTest {
         assertThat(response.get("durationMs")).isNotNull();
     }
 
+    /**
+     * Verifies that 10 parallel tasks (each 500ms) complete well under 5000ms,
+     * proving they execute concurrently on virtual threads.
+     */
     @Test
     void shouldRunParallelTasksConcurrently() {
         Map<String, Object> response = restTemplate.getForObject(
@@ -55,9 +67,9 @@ class VirtualThreadsTest {
         assertThat((Integer) response.get("totalDurationMs")).isLessThan(3000);
     }
 
+    /** Verifies that the JVM supports virtual threads at the executor level. */
     @Test
     void shouldVerifyVirtualThreadExecutorWorks() {
-        // Verify that virtual threads are available in the JVM
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var future = executor.submit(() -> Thread.currentThread().isVirtual());
             assertThat(future.get()).isTrue();

@@ -5,9 +5,23 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configures the ChatClient with an agentic system prompt.
+ *
+ * The system prompt defines a strict multi-step workflow the model must follow,
+ * turning a simple chat interaction into a structured agent that chains
+ * tool calls in a prescribed order.
+ *
+ * @author Anupam
+ */
 @Configuration
 public class AiConfig {
 
+    /**
+     * Creates a ChatClient with a travel-agent persona.
+     * The system prompt enforces a 5-step planning workflow:
+     * weather -> flights -> hotels -> activities -> budget.
+     */
     @Bean
     public ChatClient chatClient(ChatModel chatModel) {
         return ChatClient.builder(chatModel)

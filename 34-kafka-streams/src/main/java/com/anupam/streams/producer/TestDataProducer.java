@@ -13,6 +13,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Scheduled producer that generates synthetic payment data at a fixed interval
+ * and publishes it to the "raw-payments" Kafka topic. Used for testing and
+ * demonstrating the Kafka Streams processing topology.
+ *
+ * @author Anupam
+ */
 @Component
 public class TestDataProducer {
 
@@ -24,13 +31,26 @@ public class TestDataProducer {
     private final ObjectMapper objectMapper;
     private final Random random = new Random();
 
+    /**
+     * Constructs the TestDataProducer with Kafka template and JSON mapper.
+     *
+     * @param kafkaTemplate the Kafka template for sending messages
+     * @param objectMapper  the Jackson ObjectMapper for JSON serialization
+     */
     public TestDataProducer(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Produces a random test payment every 2 seconds.
+     * Generates a payment with a random UUID, random currency from the supported list,
+     * and a random amount between 0 and 50,000 (rounded to 2 decimal places).
+     * The payment is serialized to JSON and sent to the raw-payments topic.
+     */
     @Scheduled(fixedRate = 2000)
     public void produceTestPayment() {
+        // Generate a random payment with UUID, random currency, and random amount
         RawPayment payment = new RawPayment(
                 UUID.randomUUID().toString(),
                 CURRENCIES.get(random.nextInt(CURRENCIES.size())),
@@ -38,6 +58,7 @@ public class TestDataProducer {
         );
 
         try {
+            // Serialize to JSON and send to Kafka topic with payment ID as key
             String json = objectMapper.writeValueAsString(payment);
             kafkaTemplate.send(TOPIC, payment.id(), json);
             log.info("Produced payment: {} {} {}", payment.id(), payment.currency(), payment.amount());

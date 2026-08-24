@@ -4,6 +4,16 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * JPA entity representing a customer order.
+ * <p>
+ * Stored in the "orders" table. The order lifecycle is tracked via the
+ * {@link OrderStatus} enum. Each status transition generates an outbox event
+ * to ensure reliable downstream notification.
+ * </p>
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -31,15 +41,27 @@ public class Order {
     @Column(nullable = false)
     private Instant createdAt;
 
+    /**
+     * Enum representing the lifecycle states of an order.
+     */
     public enum OrderStatus {
         PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
     }
 
+    /** Default constructor — sets initial status to PENDING and timestamp to now. */
     public Order() {
         this.createdAt = Instant.now();
         this.status = OrderStatus.PENDING;
     }
 
+    /**
+     * Constructs an order with the given details.
+     *
+     * @param customerId  the customer identifier
+     * @param productName the name of the ordered product
+     * @param quantity    the quantity ordered
+     * @param totalAmount the total monetary value
+     */
     public Order(String customerId, String productName, int quantity, BigDecimal totalAmount) {
         this();
         this.customerId = customerId;

@@ -14,6 +14,13 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller for manually triggering scheduled tasks and querying their status.
+ * Provides endpoints to trigger individual tasks on demand and to retrieve
+ * execution history and scheduling configuration for all managed tasks.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -22,6 +29,13 @@ public class TaskController {
     private final DataCleanupTask cleanupTask;
     private final HealthCheckTask healthCheckTask;
 
+    /**
+     * Constructs the TaskController with all managed scheduled task components.
+     *
+     * @param reportTask      the daily report generation task
+     * @param cleanupTask     the periodic data cleanup task
+     * @param healthCheckTask the external service health check task
+     */
     public TaskController(ReportGenerationTask reportTask,
                           DataCleanupTask cleanupTask,
                           HealthCheckTask healthCheckTask) {
@@ -30,10 +44,18 @@ public class TaskController {
         this.healthCheckTask = healthCheckTask;
     }
 
+    /**
+     * Manually triggers a scheduled task by name.
+     * Supported task names: "report", "cleanup", "healthcheck".
+     *
+     * @param name the task name to trigger
+     * @return 200 OK with task trigger confirmation, or 400 Bad Request for unknown tasks
+     */
     @PostMapping("/trigger/{name}")
     public ResponseEntity<Map<String, String>> triggerTask(@PathVariable String name) {
         Map<String, String> response = new HashMap<>();
 
+        // Dispatch to the appropriate task based on the path variable
         switch (name) {
             case "report" -> {
                 reportTask.generateDailyReport();
@@ -60,22 +82,31 @@ public class TaskController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Returns the current status of all scheduled tasks, including their last run time,
+     * schedule configuration, and (for health checks) the current service status map.
+     *
+     * @return 200 OK with a map of task statuses keyed by task name
+     */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
         Map<String, Object> status = new HashMap<>();
 
+        // Report generation task metadata
         status.put("reportGeneration", Map.of(
                 "lastRun", reportTask.getLastRunTime() != null
                         ? reportTask.getLastRunTime().toString() : "never",
                 "schedule", "cron: 0 0 2 * * * (daily at 2 AM)"
         ));
 
+        // Data cleanup task metadata
         status.put("dataCleanup", Map.of(
                 "lastRun", cleanupTask.getLastRunTime() != null
                         ? cleanupTask.getLastRunTime().toString() : "never",
                 "schedule", "fixedRate: 3600000 (every hour)"
         ));
 
+        // Health check task metadata including live service status
         status.put("healthCheck", Map.of(
                 "lastRun", healthCheckTask.getLastRunTime() != null
                         ? healthCheckTask.getLastRunTime().toString() : "never",

@@ -29,16 +29,39 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Spring Security configuration for the fullstack application.
+ * <p>
+ * Configures stateless JWT-based authentication with CORS support
+ * for the React frontend. Public endpoints (auth, H2 console) are
+ * permitted without authentication; all other requests require a valid JWT.
+ * </p>
+ *
+ * @author Anupam
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
 
+    /**
+     * Constructs the security configuration with the JWT utility.
+     *
+     * @param jwtUtil the JWT utility for token validation
+     */
     public SecurityConfig(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
+    /**
+     * Defines the security filter chain with CORS, CSRF disabled,
+     * stateless sessions, and JWT authentication filter.
+     *
+     * @param http the HttpSecurity builder
+     * @return the configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -50,11 +73,19 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                // Allow H2 console to render in frames
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                // Add JWT filter before the default username/password filter
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
+    /**
+     * Configures CORS to allow requests from React dev servers
+     * (localhost:3000 for CRA, localhost:5173 for Vite).
+     *
+     * @return the CORS configuration source
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -69,6 +100,12 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Creates a JWT authentication filter that extracts and validates
+     * the Bearer token from the Authorization header on each request.
+     *
+     * @return the JWT authentication filter
+     */
     @Bean
     public OncePerRequestFilter jwtAuthenticationFilter() {
         return new OncePerRequestFilter() {
@@ -78,10 +115,12 @@ public class SecurityConfig {
                                             FilterChain filterChain) throws ServletException, IOException {
                 String authHeader = request.getHeader("Authorization");
 
+                // Extract and validate the Bearer token if present
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     String token = authHeader.substring(7);
                     if (jwtUtil.isTokenValid(token)) {
                         String username = jwtUtil.extractUsername(token);
+                        // Set authentication in the SecurityContext for downstream access
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
                         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -93,6 +132,15 @@ public class SecurityConfig {
         };
     }
 
+    /**
+     * Provides an in-memory user store with a demo admin user.
+     * <p>
+     * In production, replace with a database-backed UserDetailsService.
+     * </p>
+     *
+     * @param passwordEncoder the password encoder for hashing credentials
+     * @return the user details service
+     */
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         var user = User.builder()
@@ -103,11 +151,23 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
+    /**
+     * Provides a BCrypt password encoder for secure password hashing.
+     *
+     * @return the password encoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Exposes the AuthenticationManager as a bean for use in controllers.
+     *
+     * @param config the authentication configuration
+     * @return the authentication manager
+     * @throws Exception if the manager cannot be obtained
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

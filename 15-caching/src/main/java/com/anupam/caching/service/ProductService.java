@@ -14,6 +14,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Product service demonstrating Spring Cache annotations.
+ *
+ * Uses an in-memory map as a simulated database with 200ms artificial latency
+ * to make cache hits vs. misses clearly visible in response times.
+ *
+ * Annotations used:
+ * - @Cacheable: read-through (populate cache on miss)
+ * - @CachePut: write-through (update cache on write)
+ * - @CacheEvict: invalidation (remove stale entries)
+ *
+ * @author Anupam
+ */
 @Service
 public class ProductService {
 
@@ -24,15 +37,15 @@ public class ProductService {
     private final AtomicLong idGenerator = new AtomicLong(0);
 
     public ProductService() {
-        // Seed some data
+        // Seed sample data
         save(new Product(null, "MacBook Pro 16\"", new BigDecimal("2499.99"), "Electronics"));
         save(new Product(null, "Herman Miller Aeron", new BigDecimal("1395.00"), "Furniture"));
         save(new Product(null, "Sony WH-1000XM5", new BigDecimal("349.99"), "Electronics"));
     }
 
     /**
-     * @Cacheable — Returns cached value if present, otherwise executes the method
-     * and stores the result. The cache key is derived from the method parameter.
+     * @Cacheable - Returns cached value if present, otherwise executes
+     * the method and stores the result. Cache key is the product ID.
      */
     @Cacheable(value = "products", key = "#id")
     public Product findById(Long id) {
@@ -42,7 +55,8 @@ public class ProductService {
     }
 
     /**
-     * @Cacheable on a list — Uses a fixed key for the entire collection.
+     * @Cacheable on a collection - Uses a fixed key for the entire list.
+     * The whole list is cached as a single entry.
      */
     @Cacheable(value = "productList", key = "'allProducts'")
     public List<Product> findAll() {
@@ -52,8 +66,8 @@ public class ProductService {
     }
 
     /**
-     * @CachePut — Always executes the method and updates the cache with the result.
-     * Use for write operations where you want the cache to stay in sync.
+     * @CachePut - Always executes and updates the cache with the result.
+     * Also evicts the product list cache since the collection changed.
      */
     @CachePut(value = "products", key = "#result.id()")
     @CacheEvict(value = "productList", key = "'allProducts'")
@@ -66,7 +80,7 @@ public class ProductService {
     }
 
     /**
-     * @CachePut — Updates an existing product and refreshes the cache entry.
+     * @CachePut - Updates an existing product and refreshes its cache entry.
      */
     @CachePut(value = "products", key = "#id")
     @CacheEvict(value = "productList", key = "'allProducts'")
@@ -78,8 +92,8 @@ public class ProductService {
     }
 
     /**
-     * @CacheEvict — Removes the entry from the cache.
-     * Ensures stale data isn't served after deletion.
+     * @CacheEvict - Removes the entry from cache on deletion.
+     * Prevents serving stale data for deleted products.
      */
     @CacheEvict(value = "products", key = "#id")
     public void delete(Long id) {
@@ -87,9 +101,7 @@ public class ProductService {
         log.info("Deleted product with id: {}", id);
     }
 
-    /**
-     * Simulates a slow database query (200ms latency).
-     */
+    /** Simulates a slow database query (200ms latency). */
     private void simulateDatabaseDelay() {
         try {
             Thread.sleep(200);

@@ -14,6 +14,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Security integration tests verifying JWT-based access control.
+ *
+ * Uses Spring Security's jwt() RequestPostProcessor to simulate JWT tokens
+ * with different claims and roles without needing a real OAuth2 provider.
+ *
+ * @author Anupam
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class PaymentControllerSecurityTest {
@@ -21,6 +29,7 @@ class PaymentControllerSecurityTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /** Public endpoint should be accessible without any authentication. */
     @Test
     void shouldAllowPublicEndpointWithoutAuth() throws Exception {
         mockMvc.perform(get("/api/public/health"))
@@ -28,12 +37,14 @@ class PaymentControllerSecurityTest {
                 .andExpect(jsonPath("$.status").value("UP"));
     }
 
+    /** Protected endpoints should reject requests without a valid JWT. */
     @Test
     void shouldRejectUnauthenticatedRequest() throws Exception {
         mockMvc.perform(get("/api/payments"))
                 .andExpect(status().isUnauthorized());
     }
 
+    /** A USER-role JWT should grant access to the payments endpoint. */
     @Test
     void shouldAllowUserWithJwt() throws Exception {
         mockMvc.perform(get("/api/payments")
@@ -44,6 +55,7 @@ class PaymentControllerSecurityTest {
                 .andExpect(status().isOk());
     }
 
+    /** A USER-role JWT should be denied access to admin endpoints. */
     @Test
     void shouldDenyUserFromAdminEndpoint() throws Exception {
         mockMvc.perform(get("/api/admin/users")
@@ -54,6 +66,7 @@ class PaymentControllerSecurityTest {
                 .andExpect(status().isForbidden());
     }
 
+    /** An ADMIN-role JWT should grant access to admin endpoints. */
     @Test
     void shouldAllowAdminToAccessAdminEndpoint() throws Exception {
         mockMvc.perform(get("/api/admin/users")
@@ -64,6 +77,7 @@ class PaymentControllerSecurityTest {
                 .andExpect(status().isOk());
     }
 
+    /** The /me endpoint should return claims from the authenticated JWT. */
     @Test
     void shouldReturnCurrentUserInfo() throws Exception {
         mockMvc.perform(get("/api/me")

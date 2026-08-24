@@ -14,10 +14,24 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+/**
+ * Security configuration for the application.
+ *
+ * Sets up HTTP Basic authentication with an in-memory user store.
+ * Public endpoints (/api/products/**, /h2-console/**) are accessible without authentication.
+ * Admin endpoints (/api/admin/**) require authentication with ADMIN role.
+ *
+ * @author Anupam
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * Configures the security filter chain with endpoint-level authorization rules.
+     * CSRF is disabled for REST API convenience (not recommended for production with browser clients).
+     * H2 console frame options are disabled to allow embedded console access.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -34,6 +48,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Creates an in-memory user details service with a default admin user.
+     * Useful for demos and development; replace with a database-backed store in production.
+     */
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails admin = User.builder()
@@ -44,6 +62,9 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(admin);
     }
 
+    /**
+     * Provides BCrypt password encoding for secure password hashing.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

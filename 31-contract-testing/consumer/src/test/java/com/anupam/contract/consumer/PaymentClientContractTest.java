@@ -11,6 +11,16 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Consumer-side contract test that verifies the PaymentClient correctly
+ * interprets responses from the Payment Producer service.
+ *
+ * <p>Uses Spring Cloud Contract Stub Runner to start a stub server
+ * from the producer's generated stubs, ensuring the consumer's
+ * expectations match the producer's contract.</p>
+ *
+ * @author Anupam
+ */
 @SpringBootTest
 @AutoConfigureStubRunner(
         ids = "com.anupam:contract-testing-producer:+:stubs:8090",
@@ -19,15 +29,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "payment.service.url=http://localhost:8090")
 class PaymentClientContractTest {
 
+    /**
+     * Verifies that the consumer can retrieve a payment from the producer stub
+     * and that the response matches the expected contract format.
+     * Validates field presence, format patterns, and valid value ranges.
+     */
     @Test
     void shouldGetPaymentFromProducerStub() {
-        // Given
+        // Given - create a client pointing to the stub server
         PaymentClient paymentClient = new PaymentClient("http://localhost:8090");
 
-        // When
+        // When - fetch payment with ID 1 from the stub
         PaymentClient.PaymentResponse payment = paymentClient.getPayment(1L);
 
-        // Then
+        // Then - verify the response conforms to the contract
         assertThat(payment).isNotNull();
         assertThat(payment.id()).isEqualTo(1L);
         assertThat(payment.orderId()).matches("[A-Z]{3}-\\d{4}-\\d{3}");

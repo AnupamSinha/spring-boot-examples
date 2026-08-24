@@ -5,6 +5,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JPA entity representing a product in the catalog.
+ * <p>
+ * Mapped to the "products" table. Has a one-to-many relationship with
+ * {@link Review} entities. The reviews collection is the parent side
+ * of the bidirectional relationship with cascade and orphan removal.
+ * </p>
+ *
+ * @author Anupam
+ */
 @Entity
 @Table(name = "products")
 public class Product {
@@ -24,11 +34,21 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    /** Bidirectional one-to-many relationship with reviews. */
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
+    /** Default constructor required by JPA. */
     public Product() {}
 
+    /**
+     * Constructs a product with catalog attributes.
+     *
+     * @param name        the product name
+     * @param description the product description
+     * @param category    the product category
+     * @param price       the product price
+     */
     public Product(String name, String description, String category, BigDecimal price) {
         this.name = name;
         this.description = description;

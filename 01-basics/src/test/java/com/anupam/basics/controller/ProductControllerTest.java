@@ -15,6 +15,14 @@ import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Integration tests for {@link ProductController}.
+ *
+ * Uses @SpringBootTest with MockMvc to test the full request lifecycle
+ * including JSON serialization, validation, and HTTP status codes.
+ *
+ * @author Anupam
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class ProductControllerTest {
@@ -28,6 +36,7 @@ class ProductControllerTest {
     @Autowired
     private ProductService productService;
 
+    /** Verifies that a valid product is created and returns 201 Created. */
     @Test
     void shouldCreateProduct() throws Exception {
         Product product = new Product("Laptop", new BigDecimal("999.99"), "Electronics");
@@ -41,6 +50,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.category").value("Electronics"));
     }
 
+    /** Verifies that the list endpoint returns an array of products. */
     @Test
     void shouldGetAllProducts() throws Exception {
         productService.createProduct(new Product("Phone", new BigDecimal("599.99"), "Electronics"));
@@ -50,6 +60,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$").isArray());
     }
 
+    /** Verifies that a single product can be retrieved by its ID. */
     @Test
     void shouldGetProductById() throws Exception {
         Product saved = productService.createProduct(new Product("Tablet", new BigDecimal("399.99"), "Electronics"));
@@ -59,12 +70,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.name").value("Tablet"));
     }
 
+    /** Verifies that requesting a non-existent product returns 404. */
     @Test
     void shouldReturn404WhenProductNotFound() throws Exception {
         mockMvc.perform(get("/api/products/9999"))
                 .andExpect(status().isNotFound());
     }
 
+    /** Verifies that an existing product can be updated with new values. */
     @Test
     void shouldUpdateProduct() throws Exception {
         Product saved = productService.createProduct(new Product("Book", new BigDecimal("19.99"), "Education"));
@@ -79,6 +92,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.price").value(24.99));
     }
 
+    /** Verifies that deleting a product returns 204 No Content. */
     @Test
     void shouldDeleteProduct() throws Exception {
         Product saved = productService.createProduct(new Product("Pen", new BigDecimal("2.99"), "Stationery"));
@@ -87,6 +101,7 @@ class ProductControllerTest {
                 .andExpect(status().isNoContent());
     }
 
+    /** Verifies that submitting an invalid product returns 400 Bad Request. */
     @Test
     void shouldReturnBadRequestForInvalidProduct() throws Exception {
         Product invalid = new Product("", null, "");
@@ -97,6 +112,7 @@ class ProductControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /** Verifies that products can be filtered by category. */
     @Test
     void shouldGetProductsByCategory() throws Exception {
         productService.createProduct(new Product("Mouse", new BigDecimal("29.99"), "Peripherals"));

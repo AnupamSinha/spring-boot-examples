@@ -7,10 +7,28 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
+/**
+ * Configures asynchronous task execution with a tuned thread pool.
+ *
+ * Enables @Async support so service methods can return CompletableFuture
+ * and execute on a dedicated thread pool, keeping the request-handling
+ * threads free for new incoming requests.
+ *
+ * @author Anupam
+ */
 @Configuration
 @EnableAsync
 public class AsyncConfig {
 
+    /**
+     * Creates a thread pool executor for async operations.
+     *
+     * Pool sizing rationale:
+     * - corePoolSize(10): baseline threads always available
+     * - maxPoolSize(50): allows burst handling under load
+     * - queueCapacity(100): buffers tasks before rejecting
+     * - graceful shutdown: waits up to 30s for in-flight tasks to complete
+     */
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

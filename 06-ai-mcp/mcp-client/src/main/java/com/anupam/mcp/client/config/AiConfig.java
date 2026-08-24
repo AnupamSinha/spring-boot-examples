@@ -8,12 +8,20 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configures the ChatClient to use tools discovered from MCP servers.
+ *
  * The SyncMcpToolCallbackProvider is auto-configured by Spring AI and connects
- * to all MCP servers defined in application.yml.
+ * to all MCP servers defined in application.yml. Tools are dynamically
+ * discovered at startup and made available to the LLM without local definitions.
+ *
+ * @author Anupam
  */
 @Configuration
 public class AiConfig {
 
+    /**
+     * Creates a ChatClient wired with remotely-discovered MCP tools.
+     * The system prompt constrains the assistant to payment-related queries.
+     */
     @Bean
     public ChatClient chatClient(ChatModel chatModel, SyncMcpToolCallbackProvider mcpTools) {
         return ChatClient.builder(chatModel)

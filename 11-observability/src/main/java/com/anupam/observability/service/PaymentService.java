@@ -14,6 +14,17 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Payment service instrumented with full observability.
+ *
+ * Demonstrates:
+ * - Counter: tracks total number of payments processed
+ * - Timer: measures payment processing duration distribution
+ * - Observation: creates spans for distributed tracing with key-value context
+ * - Structured logging: logs with contextual payment data for search/filtering
+ *
+ * @author Anupam
+ */
 @Service
 public class PaymentService {
 
@@ -26,15 +37,21 @@ public class PaymentService {
     public PaymentService(MeterRegistry meterRegistry, ObservationRegistry observationRegistry) {
         this.observationRegistry = observationRegistry;
 
+        // Custom counter to track total processed payments
         this.paymentCounter = Counter.builder("payments.processed.total")
                 .description("Total payments processed")
                 .register(meterRegistry);
 
+        // Custom timer to measure processing latency distribution
         this.paymentTimer = Timer.builder("payments.processing.duration")
                 .description("Payment processing duration")
                 .register(meterRegistry);
     }
 
+    /**
+     * Processes a payment within an Observation span for tracing.
+     * Payments over $10,000 are flagged for manual REVIEW.
+     */
     public Map<String, Object> processPayment(String from, String to, BigDecimal amount) {
         return Observation.createNotStarted("payment.process", observationRegistry)
                 .lowCardinalityKeyValue("payment.method", "transfer")
@@ -42,7 +59,7 @@ public class PaymentService {
                     log.info("Processing payment: {} → {}, amount: {}", from, to, amount);
 
                     return paymentTimer.record(() -> {
-                        // Simulate processing
+                        // Simulate variable processing time (100-600ms)
                         simulateProcessing();
 
                         String paymentId = "PAY-" + UUID.randomUUID().toString().substring(0, 8);
@@ -63,6 +80,7 @@ public class PaymentService {
                 });
     }
 
+    /** Retrieves payment details by ID (simulated lookup). */
     public Map<String, Object> getPayment(String id) {
         log.info("Looking up payment: {}", id);
         return Map.of(
@@ -73,6 +91,7 @@ public class PaymentService {
         );
     }
 
+    /** Simulates variable-latency database/network call. */
     private void simulateProcessing() {
         try {
             Thread.sleep((long) (Math.random() * 500 + 100));

@@ -10,6 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST-to-gRPC gateway controller.
+ *
+ * Translates HTTP requests into gRPC calls and maps gRPC status codes
+ * back to appropriate HTTP status codes for the REST client.
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
@@ -20,6 +28,7 @@ public class PaymentController {
         this.paymentClientService = paymentClientService;
     }
 
+    /** GET /api/payments/{paymentId} - Fetches a payment via gRPC unary call. */
     @GetMapping("/{paymentId}")
     public ResponseEntity<?> getPayment(@PathVariable String paymentId) {
         try {
@@ -30,6 +39,7 @@ public class PaymentController {
         }
     }
 
+    /** GET /api/payments?userId=...&pageSize=... - Lists payments via gRPC server streaming. */
     @GetMapping
     public ResponseEntity<?> listPayments(
             @RequestParam String userId,
@@ -45,6 +55,7 @@ public class PaymentController {
         }
     }
 
+    /** Converts a Protobuf PaymentResponse to a JSON-friendly map. */
     private Map<String, Object> toMap(PaymentResponse response) {
         return Map.of(
                 "paymentId", response.getPaymentId(),
@@ -56,6 +67,7 @@ public class PaymentController {
         );
     }
 
+    /** Maps gRPC status codes to HTTP status codes for REST error responses. */
     private ResponseEntity<Map<String, String>> handleGrpcError(StatusRuntimeException e) {
         HttpStatus httpStatus = switch (e.getStatus().getCode()) {
             case NOT_FOUND -> HttpStatus.NOT_FOUND;

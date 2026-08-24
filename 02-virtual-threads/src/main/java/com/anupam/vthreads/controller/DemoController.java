@@ -12,6 +12,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Demonstration controller showcasing virtual thread behavior.
+ *
+ * Provides endpoints to observe virtual threads in action:
+ * - Single blocking call
+ * - Thread info inspection
+ * - Parallel task execution with speedup measurement
+ *
+ * @author Anupam
+ */
 @RestController
 @RequestMapping("/api")
 public class DemoController {
@@ -23,7 +33,8 @@ public class DemoController {
     }
 
     /**
-     * Simulates a blocking IO operation (500ms delay).
+     * Simulates a single 500ms blocking I/O call.
+     * Response includes the thread name and whether it was virtual.
      */
     @GetMapping("/blocking")
     public Map<String, Object> blocking() {
@@ -40,7 +51,8 @@ public class DemoController {
     }
 
     /**
-     * Returns information about the current thread handling this request.
+     * Returns metadata about the current request-handling thread.
+     * Useful for verifying that Tomcat is indeed using virtual threads.
      */
     @GetMapping("/thread-info")
     public Map<String, Object> threadInfo() {
@@ -54,7 +66,8 @@ public class DemoController {
     }
 
     /**
-     * Runs 10 blocking operations concurrently using virtual threads via ExecutorService.
+     * Runs 10 blocking operations (500ms each) concurrently using virtual threads.
+     * Demonstrates near-linear speedup: ~500ms total instead of ~5000ms sequential.
      */
     @GetMapping("/parallel")
     public Map<String, Object> parallel() {

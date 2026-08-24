@@ -13,19 +13,41 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 /**
- * HTTP-related shell commands: simple GET requests and ping.
+ * Shell commands for HTTP operations and network connectivity testing.
+ * <p>
+ * Provides a simple HTTP GET client and a ping command to check host reachability.
+ * </p>
+ *
+ * @author Anupam
  */
 @ShellComponent
 public class HttpCommands {
 
+    /** Shared HTTP client with a 10-second connection timeout. */
     private final HttpClient httpClient;
 
+    /**
+     * Initializes the HTTP client with a default connection timeout.
+     */
     public HttpCommands() {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
     }
 
+    /**
+     * Performs an HTTP GET request to the specified URL and returns the response.
+     * <p>
+     * By default, returns the status code and response body (truncated to 2000 characters).
+     * When {@code headersOnly} is true, only the status and response headers are shown.
+     * </p>
+     *
+     * @param url         the target URL for the GET request
+     * @param headersOnly if true, only display response headers instead of the body
+     * @return the formatted HTTP response output
+     * @throws IOException          if an I/O error occurs during the request
+     * @throws InterruptedException if the request is interrupted
+     */
     @ShellMethod(key = "http-get", value = "Perform an HTTP GET request")
     public String httpGet(String url,
                           @ShellOption(defaultValue = "false") boolean headersOnly)
@@ -44,17 +66,30 @@ public class HttpCommands {
         result.append("Status: ").append(response.statusCode()).append("\n");
 
         if (headersOnly) {
+            // Display all response headers
             response.headers().map().forEach((key, values) ->
                     values.forEach(value ->
                             result.append(key).append(": ").append(value).append("\n")
                     ));
         } else {
+            // Display the response body, truncated for readability
             result.append("\n").append(truncate(response.body(), 2000));
         }
 
         return result.toString();
     }
 
+    /**
+     * Pings a host to check network connectivity.
+     * <p>
+     * Attempts to reach the specified host within the given timeout and reports
+     * the result along with round-trip time.
+     * </p>
+     *
+     * @param host    the hostname or IP address to ping
+     * @param timeout the timeout in milliseconds; defaults to 5000
+     * @return a message indicating whether the host is reachable and the elapsed time
+     */
     @ShellMethod(key = "ping", value = "Ping a host to check connectivity")
     public String ping(String host,
                        @ShellOption(defaultValue = "5000") int timeout) {
@@ -75,6 +110,13 @@ public class HttpCommands {
         }
     }
 
+    /**
+     * Truncates a string to the specified maximum length, appending an indicator if truncated.
+     *
+     * @param text      the text to truncate
+     * @param maxLength the maximum allowed length
+     * @return the original text if within limits, or a truncated version with a notice
+     */
     private String truncate(String text, int maxLength) {
         if (text.length() <= maxLength) {
             return text;
